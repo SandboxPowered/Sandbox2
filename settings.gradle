@@ -1,0 +1,13 @@
+pluginManagement {
+    repositories {
+        maven {
+            name = 'ModdedMC'
+            url = 'https://maven.modded-mc.com/repository/maven-public/'
+        }
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        gradlePluginPortal()
+    }
+}
