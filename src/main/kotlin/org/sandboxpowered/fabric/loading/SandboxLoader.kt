@@ -1,6 +1,7 @@
 package org.sandboxpowered.fabric.loading
 
 import org.graalvm.polyglot.Source
+import org.sandboxpowered.fabric.Side
 import org.sandboxpowered.fabric.addon.AddonScanner
 import org.sandboxpowered.fabric.scripting.JSScriptLoader
 import org.sandboxpowered.fabric.util.RegexUtil
@@ -11,15 +12,14 @@ import kotlin.io.path.readText
 
 class SandboxLoader {
 
-    fun load() {
+    fun load(side: Side) {
         val jsLoader = JSScriptLoader()
         val addons = AddonScanner.scanDirectory(Path.of("resources"))
         addons.forEach {
             val scripts = arrayListOf<String>()
 
             if(it.config.contains("scripts")) scripts.addAll(it.config.get<ArrayList<String>>("scripts"))
-            if(it.config.contains("server.scripts")) scripts.addAll(it.config.get<ArrayList<String>>("server.scripts"))
-            if(it.config.contains("client.scripts")) scripts.addAll(it.config.get<ArrayList<String>>("client.scripts"))
+            if(it.config.contains("${side.side}.scripts")) scripts.addAll(it.config.get<ArrayList<String>>("${side.side}.scripts"))
 
             val basePath = it.path
             scripts.forEach { script ->

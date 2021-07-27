@@ -5,6 +5,6 @@ import org.sandboxpowered.fabric.loading.SandboxLoader
 object Main {
     fun startSandboxInternals() {
         val loader = SandboxLoader()
-        loader.load()
+        loader.load(Side.SERVER)
     }
 }
