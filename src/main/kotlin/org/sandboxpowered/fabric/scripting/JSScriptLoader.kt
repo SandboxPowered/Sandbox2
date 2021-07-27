@@ -8,13 +8,8 @@ import org.sandboxpowered.fabric.scripting.js.SandboxJS
 import java.util.function.Function
 
 class JSScriptLoader {
-    private val context: Context = Context.newBuilder("js")
-        .allowExperimentalOptions(true)
-        .fileSystem(SandboxFileSystem())
-        .allowHostAccess(HostAccess.newBuilder(HostAccess.EXPLICIT).allowPublicAccess(true).build())
-        .allowIO(true)
-        .build()
-    private val sbxJS = SandboxJS()
+    private val scriptContext = HashMap<String, HashMap<String, Context>>()
+    val sbxJS = SandboxJS()
     private val loadModuleFunction: Function<String, Any> = Function {
         when (it) {
             "core" -> sbxJS
@@ -22,13 +17,28 @@ class JSScriptLoader {
         }
     }
 
-    fun init() {
+    fun buildContext(): Context = Context.newBuilder("js")
+        .allowExperimentalOptions(true)
+        .fileSystem(SandboxFileSystem())
+        .allowHostAccess(HostAccess.newBuilder(HostAccess.EXPLICIT).allowPublicAccess(true).build())
+        .allowIO(true)
+        .build()
+
+    private fun getResourceContextMap(resource: String): HashMap<String, Context> {
+        return scriptContext.computeIfAbsent(resource) { HashMap() }
+    }
+
+    fun loadScriptContext(resource: String, scriptSource: Source) {
+        val resourceContextMap = getResourceContextMap(resource)
+
+        val context = buildContext();
+
+        resourceContextMap[scriptSource.name] = context
+
         val bindings = context.getBindings("js")
 
         bindings.putMember("loadModule", loadModuleFunction)
-    }
 
-    fun eval(script: String, fileName: String) {
-        context.eval(Source.newBuilder("js", script, fileName).build())
+        context.eval(scriptSource)
     }
 }

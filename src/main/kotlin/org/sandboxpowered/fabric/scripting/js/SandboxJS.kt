@@ -1,28 +1,42 @@
 package org.sandboxpowered.fabric.scripting.js
 
+import org.apache.commons.lang3.ArrayUtils
 import org.graalvm.polyglot.Value
+import java.util.function.Consumer
 
 class SandboxJS {
+    private val events = HashMap<String, ArrayList<Consumer<Array<Any>>>>()
+    private val netEvents = ArrayList<String>()
+
     fun registerNetEvent(string: String) {
-        println("RegisterNetEvent: [$string]")
+        netEvents.add(string)
     }
 
     fun emit(event: String, vararg args: Any) {
-
+        if(events.containsKey(event)) {
+            events[event]?.forEach {
+                it.accept(arrayOf(*args))
+            }
+        }
     }
 
     fun emitServer(event: String, vararg args: Any) {
-
+        emit(event, "client", args)
     }
 
     fun emitClient(client: Any, event: String, vararg args: Any) {
-
+        emit(event, args)
     }
 
     fun on(event: String, function: Value) {
         if (!function.canExecute()) throw UnsupportedOperationException("what")
 
-        println("SubscribedEvent: [$event]")
+        if (!events.containsKey(event)) {
+            events[event] = ArrayList()
+        }
+        events[event]?.add(Consumer {
+            function.executeVoid(*it)
+        })
     }
 
     fun loadResourceFile(resource: String): String? {
