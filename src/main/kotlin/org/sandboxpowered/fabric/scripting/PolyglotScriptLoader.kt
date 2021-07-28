@@ -15,11 +15,7 @@ class PolyglotScriptLoader {
 
     private fun buildContext(): Context = Context.newBuilder("js", "python")
         .allowExperimentalOptions(true)
-        .allowHostAccess(HostAccess
-            .newBuilder(HostAccess.EXPLICIT)
-            .allowPublicAccess(true)
-            .build()
-        ).build()
+        .allowHostAccess(HostAccess.newBuilder(HostAccess.EXPLICIT).allowAccessAnnotatedBy<HostAccess.Export>().build()).build()
 
     private fun getResourceContextMap(resource: String): HashMap<String, Context> {
         return scriptContext.computeIfAbsent(resource) { HashMap() }
@@ -30,7 +26,7 @@ class PolyglotScriptLoader {
     }
 
     fun emitEventToAll(event: String, vararg args: Any) {
-        polyglotContext.forEach { (resource, context) ->
+        polyglotContext.forEach { (_, context) ->
             if (context.events.containsKey(event)) {
                 context.events[event]?.forEach {
                     it.accept(arrayOf(*args))
@@ -67,7 +63,15 @@ class PolyglotScriptLoader {
         }
     }
 
+    fun unloadResource(resource: String) {
+        emitEventTo(resource, "onResourceUnload")
+    }
+
     fun markEventAsNetCapable(string: String) {
 
     }
+}
+
+private inline fun <reified T : Annotation> HostAccess.Builder.allowAccessAnnotatedBy(): HostAccess.Builder {
+    return allowAccessAnnotatedBy(T::class.java)
 }
