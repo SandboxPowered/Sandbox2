@@ -5,7 +5,6 @@ import org.sandboxpowered.fabric.Side
 import org.sandboxpowered.fabric.addon.AddonScanner
 import org.sandboxpowered.fabric.scripting.PolyglotScriptLoader
 import org.sandboxpowered.fabric.util.RegexUtil
-import java.lang.RuntimeException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -57,8 +56,4 @@ class SandboxLoader {
             else -> ""
         }
     }
-}
-
-fun <E> ArrayList<E>.addAll(vararg elements: E) {
-    elements.forEach(this::add)
 }

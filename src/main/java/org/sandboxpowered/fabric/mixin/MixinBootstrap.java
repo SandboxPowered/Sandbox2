@@ -10,11 +10,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Bootstrap.class)
 public class MixinBootstrap {
-    @Shadow private static volatile boolean initialized;
+    @Shadow
+    private static volatile boolean initialized;
 
     @Inject(method = "initialize", at = @At("HEAD"))
     private static void sandbox_initialize(CallbackInfo ci) {
-        if(!initialized) {
+        if (!initialized) {
             Main.INSTANCE.startSandboxInternals();
         }
     }
