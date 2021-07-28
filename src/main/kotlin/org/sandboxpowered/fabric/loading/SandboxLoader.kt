@@ -5,6 +5,7 @@ import org.sandboxpowered.fabric.Side
 import org.sandboxpowered.fabric.addon.AddonScanner
 import org.sandboxpowered.fabric.scripting.PolyglotScriptLoader
 import org.sandboxpowered.fabric.util.RegexUtil
+import java.lang.UnsupportedOperationException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -39,6 +40,8 @@ class SandboxLoader {
                         polyglotLoader.emitEventTo(it.path.name, "onResourceLoad")
                     }
                     "jar" -> {
+                        if(side==Side.CLIENT) throw UnsupportedOperationException("Unable to load .jar on client")
+                        
                         // TODO
                     }
                     else -> {
