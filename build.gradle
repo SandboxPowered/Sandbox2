@@ -117,6 +117,7 @@ task ('proguard', type: proguard.gradle.ProGuardTask) {
 
 		keepclassmembers 'class * { \
 			@net.minecraft.obfuscate.DontObfuscate public *; \
+			@org.graalvm.polyglot.HostAccess.Export public *; \
 		}'
 
 		keepclassmembers 'class org.sandboxpowered.fabric.mixin.* { \
