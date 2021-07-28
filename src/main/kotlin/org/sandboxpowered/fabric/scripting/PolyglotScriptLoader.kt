@@ -36,7 +36,7 @@ class PolyglotScriptLoader {
     }
 
     fun emitEventTo(resource: String, event: String, vararg args: Any) {
-        if(polyglotContext.containsKey(resource)) {
+        if (polyglotContext.containsKey(resource)) {
             val context = polyglotContext[resource]!!
             if (context.events.containsKey(event)) {
                 context.events[event]?.forEach {
