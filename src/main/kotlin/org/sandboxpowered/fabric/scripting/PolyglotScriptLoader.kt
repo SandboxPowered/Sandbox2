@@ -5,6 +5,7 @@ import org.graalvm.polyglot.HostAccess
 import org.graalvm.polyglot.Source
 import org.sandboxpowered.fabric.scripting.polyglot.SandboxFileSystem
 import org.sandboxpowered.fabric.scripting.polyglot.SandboxPolyglotContext
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -12,15 +13,9 @@ import java.util.function.Function
 
 
 class PolyglotScriptLoader {
-    val executor = Executors.newSingleThreadExecutor()
+    private val executor = Executors.newSingleThreadExecutor()
     private val scriptContext = HashMap<String, HashMap<String, Context>>()
     val polyglotContext = SandboxPolyglotContext()
-    private val loadModuleFunction: Function<String, Any> = Function {
-        when (it) {
-            "core" -> polyglotContext
-            else -> throw RuntimeException("Unknown module '$it'")
-        }
-    }
 
     private fun buildContext(): Context = Context.newBuilder("js", "python")
         .allowExperimentalOptions(true)
@@ -42,11 +37,10 @@ class PolyglotScriptLoader {
 
         val bindings = context.getBindings(scriptSource.language)
 
-        bindings.putMember("loadModule", loadModuleFunction)
+        bindings.putMember("sandbox", polyglotContext)
 
-        val future = executor.submit { context.eval(scriptSource) }
         try {
-            future.get(5, TimeUnit.SECONDS)
+            executor.submit { context.eval(scriptSource) }.get(5, TimeUnit.SECONDS)
         } catch (exception: TimeoutException) {
             println("Script ${scriptSource.name} failed to run in under 5 seconds")
         }

@@ -46,7 +46,7 @@ class SandboxLoader {
             }
         }
 
-        polyglotLoader.polyglotContext.emit("onLoad")
+        polyglotLoader.polyglotContext.emit("onResourceLoad")
     }
 
     private fun scriptExtensionToLanguage(extension: String): String {
