@@ -3,26 +3,26 @@ package org.sandboxpowered.fabric.scripting
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.HostAccess
 import org.graalvm.polyglot.Source
-import org.sandboxpowered.fabric.scripting.js.SandboxFileSystem
-import org.sandboxpowered.fabric.scripting.js.SandboxJS
+import org.sandboxpowered.fabric.scripting.polyglot.SandboxFileSystem
+import org.sandboxpowered.fabric.scripting.polyglot.SandboxPolyglotContext
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.function.Function
 
 
-class JSScriptLoader {
+class PolyglotScriptLoader {
     val executor = Executors.newSingleThreadExecutor()
     private val scriptContext = HashMap<String, HashMap<String, Context>>()
-    val sbxJS = SandboxJS()
+    val polyglotContext = SandboxPolyglotContext()
     private val loadModuleFunction: Function<String, Any> = Function {
         when (it) {
-            "core" -> sbxJS
+            "core" -> polyglotContext
             else -> throw RuntimeException("Unknown module '$it'")
         }
     }
 
-    private fun buildContext(): Context = Context.newBuilder("js")
+    private fun buildContext(): Context = Context.newBuilder("js", "python")
         .allowExperimentalOptions(true)
         .fileSystem(SandboxFileSystem())
         .allowHostAccess(HostAccess.newBuilder(HostAccess.EXPLICIT).allowPublicAccess(true).build())
@@ -40,7 +40,7 @@ class JSScriptLoader {
 
         resourceContextMap[scriptSource.name] = context
 
-        val bindings = context.getBindings("js")
+        val bindings = context.getBindings(scriptSource.language)
 
         bindings.putMember("loadModule", loadModuleFunction)
 

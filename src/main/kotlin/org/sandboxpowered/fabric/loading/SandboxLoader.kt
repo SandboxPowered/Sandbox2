@@ -3,7 +3,7 @@ package org.sandboxpowered.fabric.loading
 import org.graalvm.polyglot.Source
 import org.sandboxpowered.fabric.Side
 import org.sandboxpowered.fabric.addon.AddonScanner
-import org.sandboxpowered.fabric.scripting.JSScriptLoader
+import org.sandboxpowered.fabric.scripting.PolyglotScriptLoader
 import org.sandboxpowered.fabric.util.RegexUtil
 import java.lang.RuntimeException
 import java.nio.charset.StandardCharsets
@@ -15,7 +15,7 @@ import kotlin.io.path.readText
 class SandboxLoader {
 
     fun load(side: Side) {
-        val jsLoader = JSScriptLoader()
+        val polyglotLoader = PolyglotScriptLoader()
         val addons = AddonScanner.scanDirectory(Path.of("resources"))
         addons.forEach {
             val scripts = arrayListOf<String>()
@@ -28,14 +28,14 @@ class SandboxLoader {
                 val regex = RegexUtil.convertGlobToRegex(script)
                 val scriptPath = basePath.resolve(script)
                 when (scriptPath.extension) {
-                    "js" -> {
+                    "js", "py" -> {
                         val source = Source.newBuilder(
-                            "js",
+                            scriptExtensionToLanguage(scriptPath.extension),
                             scriptPath.readText(StandardCharsets.UTF_8),
                             scriptPath.name
                         ).build()
 
-                        jsLoader.loadScriptContext(it.path.name, source)
+                        polyglotLoader.loadScriptContext(it.path.name, source)
                     }
                     "jar" -> {
                         // TODO
@@ -47,7 +47,15 @@ class SandboxLoader {
             }
         }
 
-        jsLoader.sbxJS.emit("onLoad")
+        polyglotLoader.polyglotContext.emit("onLoad")
+    }
+
+    private fun scriptExtensionToLanguage(extension: String): String {
+        return when (extension) {
+            "js" -> "js"
+            "py" -> "python"
+            else -> ""
+        }
     }
 }
 

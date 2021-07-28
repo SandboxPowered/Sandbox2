@@ -1,9 +1,9 @@
-package org.sandboxpowered.fabric.scripting.js
+package org.sandboxpowered.fabric.scripting.polyglot
 
 import org.graalvm.polyglot.Value
 import java.util.function.Consumer
 
-class SandboxJS {
+class SandboxPolyglotContext {
     private val events = HashMap<String, ArrayList<Consumer<Array<Any>>>>()
     private val netEvents = ArrayList<String>()
 

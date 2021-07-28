@@ -1,4 +1,4 @@
-package org.sandboxpowered.fabric.scripting.js
+package org.sandboxpowered.fabric.scripting.polyglot
 
 import org.graalvm.polyglot.io.FileSystem
 import java.net.URI
