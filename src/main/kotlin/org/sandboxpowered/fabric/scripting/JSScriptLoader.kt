@@ -5,9 +5,14 @@ import org.graalvm.polyglot.HostAccess
 import org.graalvm.polyglot.Source
 import org.sandboxpowered.fabric.scripting.js.SandboxFileSystem
 import org.sandboxpowered.fabric.scripting.js.SandboxJS
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.function.Function
 
+
 class JSScriptLoader {
+    val executor = Executors.newSingleThreadExecutor()
     private val scriptContext = HashMap<String, HashMap<String, Context>>()
     val sbxJS = SandboxJS()
     private val loadModuleFunction: Function<String, Any> = Function {
@@ -17,7 +22,7 @@ class JSScriptLoader {
         }
     }
 
-    fun buildContext(): Context = Context.newBuilder("js")
+    private fun buildContext(): Context = Context.newBuilder("js")
         .allowExperimentalOptions(true)
         .fileSystem(SandboxFileSystem())
         .allowHostAccess(HostAccess.newBuilder(HostAccess.EXPLICIT).allowPublicAccess(true).build())
@@ -39,6 +44,13 @@ class JSScriptLoader {
 
         bindings.putMember("loadModule", loadModuleFunction)
 
-        context.eval(scriptSource)
+        val future = executor.submit {
+            context.eval(scriptSource)
+        }
+        try {
+            future.get(5, TimeUnit.SECONDS)
+        } catch (exception: TimeoutException) {
+            println("Script ${scriptSource.name} failed to run in under 5 seconds")
+        }
     }
 }
