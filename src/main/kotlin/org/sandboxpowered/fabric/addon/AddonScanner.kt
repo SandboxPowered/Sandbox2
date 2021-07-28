@@ -19,7 +19,13 @@ object AddonScanner {
                     if (Files.exists(manifestPath)) {
                         val manifest = FileConfig.of(manifestPath, TomlFormat.instance())
                         manifest.load()
-                        addons.add(AddonReference(it, manifest))
+                        if (manifest.contains("manifest_version")) {
+                            val manifestVersion: String = manifest.get("manifest_version")
+                            if (manifestVersion != "cantankerous") {
+                                println("Unknown manifest version $manifestVersion")
+                            }
+                            addons.add(AddonReference(it, manifest))
+                        }
                     }
                 }
             }
