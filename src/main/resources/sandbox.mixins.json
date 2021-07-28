@@ -5,10 +5,11 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "MixinBootstrap",
-    "MixinClientBrandRetriever",
-    "MixinMinecraftServer"
+    "MixinMinecraftServer",
+    "MixinRecipeManager"
   ],
   "client": [
+    "MixinClientBrandRetriever"
   ],
   "injectors": {
     "defaultRequire": 1

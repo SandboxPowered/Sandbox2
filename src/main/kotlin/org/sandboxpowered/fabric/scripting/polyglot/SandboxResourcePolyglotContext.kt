@@ -5,7 +5,7 @@ import org.graalvm.polyglot.Value
 import org.sandboxpowered.fabric.scripting.PolyglotScriptLoader
 import java.util.function.Consumer
 
-class SandboxResourcePolyglotContext(val resource: String, private val scriptLoader: PolyglotScriptLoader) {
+class SandboxResourcePolyglotContext(private val resource: String, private val scriptLoader: PolyglotScriptLoader) {
     val events = HashMap<String, ArrayList<Consumer<Array<Any>>>>()
 
     @Export
@@ -35,11 +35,10 @@ class SandboxResourcePolyglotContext(val resource: String, private val scriptLoa
     fun on(event: String, function: Value) {
         if (!function.canExecute()) throw UnsupportedOperationException("what")
 
-        if (!events.containsKey(event)) {
-            events[event] = ArrayList()
-        }
-        events[event]?.add(Consumer {
-            function.executeVoid(*it)
+        if (!events.containsKey(event)) events[event] = ArrayList()
+
+        events[event]!!.add(Consumer { args ->
+            function.execute(*args)
         })
     }
 

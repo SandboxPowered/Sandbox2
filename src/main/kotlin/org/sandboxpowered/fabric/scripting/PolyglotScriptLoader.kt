@@ -2,7 +2,9 @@ package org.sandboxpowered.fabric.scripting
 
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.HostAccess
+import org.graalvm.polyglot.PolyglotAccess
 import org.graalvm.polyglot.Source
+import org.sandboxpowered.fabric.scripting.polyglot.PolyglotFileSystem
 import org.sandboxpowered.fabric.scripting.polyglot.SandboxResourcePolyglotContext
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -15,7 +17,9 @@ class PolyglotScriptLoader {
 
     private fun buildContext(): Context = Context.newBuilder("js", "python")
         .allowExperimentalOptions(true)
-        .allowHostAccess(HostAccess.newBuilder(HostAccess.EXPLICIT).allowAccessAnnotatedBy<HostAccess.Export>().build()).build()
+        .fileSystem(PolyglotFileSystem())
+        .allowIO(true)
+        .allowHostAccess(HostAccess.EXPLICIT).build()
 
     private fun getResourceContextMap(resource: String): HashMap<String, Context> {
         return scriptContext.computeIfAbsent(resource) { HashMap() }
@@ -59,13 +63,18 @@ class PolyglotScriptLoader {
 
         try {
             executor.submit { context.eval(scriptSource) }.get(5, TimeUnit.SECONDS)
-        } catch (exception: TimeoutException) {
-            println("Script ${scriptSource.name} failed to run in under 5 seconds")
+        } catch (exception: Exception) {
+            if (exception is TimeoutException)
+                error("Script ${scriptSource.name} failed to run in under 5 seconds")
+            else exception.printStackTrace()
         }
     }
 
     fun unloadResource(resource: String) {
         emitEventTo(resource, "onResourceUnload")
+
+        polyglotContext.remove(resource)
+        scriptContext.remove(resource)
     }
 
     fun markEventAsNetCapable(string: String) {

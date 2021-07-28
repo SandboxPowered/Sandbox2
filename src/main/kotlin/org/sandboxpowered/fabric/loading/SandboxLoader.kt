@@ -14,8 +14,9 @@ import kotlin.io.path.readText
 
 class SandboxLoader {
 
+    val polyglotLoader = PolyglotScriptLoader()
+
     fun load(side: Side) {
-        val polyglotLoader = PolyglotScriptLoader()
         val addons = AddonScanner.scanDirectory(Path.of("resources"))
         addons.forEach {
             val scripts = arrayListOf<String>()
@@ -27,15 +28,17 @@ class SandboxLoader {
             scripts.forEach { script ->
                 val regex = RegexUtil.convertGlobToRegex(script)
                 val scriptPath = basePath.resolve(script)
-                when (scriptPath.extension) {
+                when (val extension = scriptPath.extension) {
                     "js", "py" -> {
-                        val source = Source.newBuilder(
-                            scriptExtensionToLanguage(scriptPath.extension),
+                        val sourceBuilder = Source.newBuilder(
+                            scriptExtensionToLanguage(extension),
                             scriptPath.readText(StandardCharsets.UTF_8),
                             scriptPath.name
-                        ).build()
+                        )
 
-                        polyglotLoader.loadScriptContext(it.path.name, source)
+                        if(extension == "js") sourceBuilder.mimeType("application/javascript+module")
+
+                        polyglotLoader.loadScriptContext(it.path.name, sourceBuilder.build())
 
                         polyglotLoader.emitEventTo(it.path.name, "onResourceLoad")
                     }
@@ -46,10 +49,11 @@ class SandboxLoader {
                         throw UnsupportedOperationException(".jar is not supported yet")
                     }
                     "lua" -> {
+                        // TODO
                         throw UnsupportedOperationException(".lua is not supported yet")
                     }
                     else -> {
-                        throw RuntimeException("Unsupported extension .${scriptPath.extension}")
+                        throw RuntimeException("Unsupported extension .${extension}")
                     }
                 }
             }
@@ -62,5 +66,9 @@ class SandboxLoader {
             "jar" -> "java"
             else -> extension
         }
+    }
+
+    fun emitEvent(event: String, vararg args: Any) {
+        polyglotLoader.emitEventToAll(event, args)
     }
 }
