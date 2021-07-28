@@ -40,9 +40,13 @@ class SandboxLoader {
                         polyglotLoader.emitEventTo(it.path.name, "onResourceLoad")
                     }
                     "jar" -> {
-                        if(side==Side.CLIENT) throw UnsupportedOperationException("Unable to load .jar on client")
-                        
+                        if (side == Side.CLIENT) throw UnsupportedOperationException("Unable to load .jar on client")
+
                         // TODO
+                        throw UnsupportedOperationException(".jar is not supported yet")
+                    }
+                    "lua" -> {
+                        throw UnsupportedOperationException(".lua is not supported yet")
                     }
                     else -> {
                         throw RuntimeException("Unsupported extension .${scriptPath.extension}")
@@ -54,9 +58,9 @@ class SandboxLoader {
 
     private fun scriptExtensionToLanguage(extension: String): String {
         return when (extension) {
-            "js" -> "js"
             "py" -> "python"
-            else -> ""
+            "jar" -> "java"
+            else -> extension
         }
     }
 }
