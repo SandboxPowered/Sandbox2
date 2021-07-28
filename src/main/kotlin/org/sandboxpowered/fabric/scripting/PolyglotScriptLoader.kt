@@ -19,10 +19,11 @@ class PolyglotScriptLoader {
 
     private fun buildContext(): Context = Context.newBuilder("js", "python")
         .allowExperimentalOptions(true)
-        .fileSystem(SandboxFileSystem())
-        .allowHostAccess(HostAccess.newBuilder(HostAccess.EXPLICIT).allowPublicAccess(true).build())
-        .allowIO(true)
-        .build()
+        .allowHostAccess(HostAccess
+            .newBuilder(HostAccess.EXPLICIT)
+            .allowPublicAccess(true)
+            .build()
+        ).build()
 
     private fun getResourceContextMap(resource: String): HashMap<String, Context> {
         return scriptContext.computeIfAbsent(resource) { HashMap() }
