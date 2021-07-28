@@ -35,6 +35,8 @@ class SandboxLoader {
                         ).build()
 
                         polyglotLoader.loadScriptContext(it.path.name, source)
+
+                        polyglotLoader.emitEventTo(it.path.name, "onResourceLoad")
                     }
                     "jar" -> {
                         // TODO
@@ -45,8 +47,6 @@ class SandboxLoader {
                 }
             }
         }
-
-        polyglotLoader.polyglotContext.emit("onResourceLoad")
     }
 
     private fun scriptExtensionToLanguage(extension: String): String {

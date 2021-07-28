@@ -1,22 +1,19 @@
 package org.sandboxpowered.fabric.scripting.polyglot
 
+import org.graalvm.polyglot.HostAccess
 import org.graalvm.polyglot.Value
+import org.sandboxpowered.fabric.scripting.PolyglotScriptLoader
 import java.util.function.Consumer
 
-class SandboxPolyglotContext {
-    private val events = HashMap<String, ArrayList<Consumer<Array<Any>>>>()
-    private val netEvents = ArrayList<String>()
+class SandboxResourcePolyglotContext(val resource: String, val scriptLoader: PolyglotScriptLoader) {
+    val events = HashMap<String, ArrayList<Consumer<Array<Any>>>>()
 
     fun registerNetEvent(string: String) {
-        netEvents.add(string)
+        scriptLoader.markEventAsNetCapable(string)
     }
 
     fun emit(event: String, vararg args: Any) {
-        if (events.containsKey(event)) {
-            events[event]?.forEach {
-                it.accept(arrayOf(*args))
-            }
-        }
+        scriptLoader.emitEventToAll(event, args)
     }
 
     fun emitServer(event: String, vararg args: Any) {
@@ -38,13 +35,13 @@ class SandboxPolyglotContext {
         })
     }
 
-    fun loadResourceFile(resource: String): String? {
-        println("Loading: [$resource]")
+    fun loadResourceFile(path: String): String? {
+        println("Loading: [$path]")
         return null
     }
 
-    fun saveResourceFile(resource: String, data: String): Boolean {
-        println("Saving: [$resource]")
+    fun saveResourceFile(path: String, data: String): Boolean {
+        println("Saving: [$path]")
         return false
     }
 }
