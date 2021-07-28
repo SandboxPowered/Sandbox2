@@ -36,7 +36,7 @@ class JSScriptLoader {
     fun loadScriptContext(resource: String, scriptSource: Source) {
         val resourceContextMap = getResourceContextMap(resource)
 
-        val context = buildContext();
+        val context = buildContext()
 
         resourceContextMap[scriptSource.name] = context
 
@@ -44,9 +44,7 @@ class JSScriptLoader {
 
         bindings.putMember("loadModule", loadModuleFunction)
 
-        val future = executor.submit {
-            context.eval(scriptSource)
-        }
+        val future = executor.submit { context.eval(scriptSource) }
         try {
             future.get(5, TimeUnit.SECONDS)
         } catch (exception: TimeoutException) {

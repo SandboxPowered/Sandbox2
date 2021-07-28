@@ -1,6 +1,5 @@
 package org.sandboxpowered.fabric.scripting.js
 
-import org.apache.commons.lang3.ArrayUtils
 import org.graalvm.polyglot.Value
 import java.util.function.Consumer
 
@@ -13,7 +12,7 @@ class SandboxJS {
     }
 
     fun emit(event: String, vararg args: Any) {
-        if(events.containsKey(event)) {
+        if (events.containsKey(event)) {
             events[event]?.forEach {
                 it.accept(arrayOf(*args))
             }
