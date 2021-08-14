@@ -18,5 +18,6 @@ object Main {
     fun handleRecipes(map: MutableMap<Identifier, JsonElement>) {
         val recipeManager = PolyglotRecipeManager(map)
         loader.emitEvent("recipes", recipeManager)
+        recipeManager.run()
     }
 }
