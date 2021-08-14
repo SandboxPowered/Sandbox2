@@ -69,6 +69,6 @@ class SandboxLoader {
     }
 
     fun emitEvent(event: String, vararg args: Any) {
-        polyglotLoader.emitEventToAll(event, args)
+        polyglotLoader.emitEventToAll(event, *args)
     }
 }

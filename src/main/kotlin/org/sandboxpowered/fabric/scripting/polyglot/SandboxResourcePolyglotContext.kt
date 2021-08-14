@@ -16,19 +16,19 @@ class SandboxResourcePolyglotContext(private val resource: String, private val s
     @Export
     fun emit(event: String, vararg args: Any) {
         if (event.contains(':'))
-            scriptLoader.emitEventToAll(event, args)
+            scriptLoader.emitEventToAll(event, *args)
         else
-            scriptLoader.emitEventTo(resource, event, args)
+            scriptLoader.emitEventTo(resource, event, *args)
     }
 
     @Export
     fun emitServer(event: String, vararg args: Any) {
-        emit(event, "client", args)
+        emit(event, "client", *args)
     }
 
     @Export
     fun emitClient(client: Any, event: String, vararg args: Any) {
-        emit(event, args)
+        emit(event, *args)
     }
 
     @Export

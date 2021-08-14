@@ -48,7 +48,7 @@ class PolyglotScriptLoader {
                 }
             }
         }
-        emitEventToAll(resource, "$resource:$event", args)
+        emitEventToAll(resource, "$resource:$event", *args)
     }
 
     fun loadScriptContext(resource: String, scriptSource: Source) {
