@@ -8,7 +8,7 @@ import java.util.function.BiPredicate
 
 class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>) {
 
-    private val removalPredicates: ArrayList<BiPredicate<Identifier, JsonElement>> = arrayListOf()
+    private val removalPredicates: MutableList<BiPredicate<Identifier, JsonElement>> = arrayListOf()
     private var removeAll: Boolean = false
 
     fun run() {
@@ -40,13 +40,15 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
             predicate = mergePredicates(predicate, idPredicate)
         }
         if (domain != null) {
-            val domainPredicate =
-                BiPredicate<Identifier, JsonElement> { identifier, _ -> identifier.namespace == domain }
+            val domainPredicate = BiPredicate<Identifier, JsonElement> { identifier, _ ->
+                identifier.namespace == domain
+            }
             predicate = mergePredicates(predicate, domainPredicate)
         }
         if (type != null) {
-            val typePredicate =
-                BiPredicate<Identifier, JsonElement> { _, json -> json.asJsonObject.get("type").asString == type }
+            val typePredicate = BiPredicate<Identifier, JsonElement> { _, json ->
+                json.asJsonObject.get("type").asString == type
+            }
             predicate = mergePredicates(predicate, typePredicate)
         }
         if (output != null) {
@@ -54,19 +56,15 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
             predicate = mergePredicates(predicate, outputPredicate)
         }
 
-        if (predicate != null)
-            removalPredicates.add(predicate)
-        else
-            removeAll = true
+        if (predicate != null) removalPredicates += predicate
+        else removeAll = true
     }
 
     private fun mergePredicates(
         predicate: BiPredicate<Identifier, JsonElement>?,
         newPredicate: BiPredicate<Identifier, JsonElement>
-    ): BiPredicate<Identifier, JsonElement>? {
-        if (predicate != null)
-            return predicate.and(newPredicate)
-        return newPredicate
+    ): BiPredicate<Identifier, JsonElement> {
+        return predicate?.and(newPredicate) ?: newPredicate
     }
 }
 

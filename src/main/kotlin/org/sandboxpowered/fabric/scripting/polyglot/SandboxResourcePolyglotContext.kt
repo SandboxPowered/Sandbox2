@@ -3,10 +3,17 @@ package org.sandboxpowered.fabric.scripting.polyglot
 import org.graalvm.polyglot.HostAccess.Export
 import org.graalvm.polyglot.Value
 import org.sandboxpowered.fabric.scripting.PolyglotScriptLoader
-import java.util.function.Consumer
+
+typealias Consumer = (Array<out Any>) -> Unit
 
 class SandboxResourcePolyglotContext(private val resource: String, private val scriptLoader: PolyglotScriptLoader) {
-    val events = HashMap<String, ArrayList<Consumer<Array<Any>>>>()
+    private val events: MutableMap<String, MutableList<Consumer>> = HashMap()
+
+    operator fun get(eventName: String): List<Consumer>? = events[eventName]
+
+    inline fun event(name: String, body: (Consumer) -> Unit) {
+        this[name]?.forEach(body)
+    }
 
     @Export
     fun registerNetEvent(string: String) {
@@ -15,10 +22,8 @@ class SandboxResourcePolyglotContext(private val resource: String, private val s
 
     @Export
     fun emit(event: String, vararg args: Any) {
-        if (event.contains(':'))
-            scriptLoader.emitEventToAll(event, *args)
-        else
-            scriptLoader.emitEventTo(resource, event, *args)
+        if (event.contains(':')) scriptLoader.emitEventToAll(event, *args)
+        else scriptLoader.emitEventTo(resource, event, *args)
     }
 
     @Export
@@ -33,13 +38,11 @@ class SandboxResourcePolyglotContext(private val resource: String, private val s
 
     @Export
     fun on(event: String, function: Value) {
-        if (!function.canExecute()) throw UnsupportedOperationException("what")
+        if (!function.canExecute()) throw UnsupportedOperationException("Can't execute $function")
 
         if (!events.containsKey(event)) events[event] = ArrayList()
 
-        events[event]!!.add(Consumer { args ->
-            function.execute(*args)
-        })
+        events.computeIfAbsent(event) { mutableListOf() }.add(function::execute)
     }
 
     @Export

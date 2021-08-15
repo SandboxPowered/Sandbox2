@@ -31,3 +31,7 @@ bin/
 # fabric
 
 run/
+
+# npm
+/node_modules/
+/package-lock.json

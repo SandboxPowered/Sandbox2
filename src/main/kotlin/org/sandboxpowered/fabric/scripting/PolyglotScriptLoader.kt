@@ -2,7 +2,6 @@ package org.sandboxpowered.fabric.scripting
 
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.HostAccess
-import org.graalvm.polyglot.PolyglotAccess
 import org.graalvm.polyglot.Source
 import org.sandboxpowered.fabric.scripting.polyglot.PolyglotFileSystem
 import org.sandboxpowered.fabric.scripting.polyglot.SandboxResourcePolyglotContext
@@ -12,8 +11,8 @@ import java.util.concurrent.TimeoutException
 
 class PolyglotScriptLoader {
     private val executor = Executors.newSingleThreadExecutor()
-    private val scriptContext = HashMap<String, HashMap<String, Context>>()
-    private val polyglotContext = HashMap<String, SandboxResourcePolyglotContext>()
+    private val scriptContext: MutableMap<String, MutableMap<String, Context>> = HashMap()
+    private val polyglotContext: MutableMap<String, SandboxResourcePolyglotContext> = HashMap()
 
     private fun buildContext(): Context = Context.newBuilder("js", "python")
         .allowExperimentalOptions(true)
@@ -21,7 +20,7 @@ class PolyglotScriptLoader {
         .allowIO(true)
         .allowHostAccess(HostAccess.EXPLICIT).build()
 
-    private fun getResourceContextMap(resource: String): HashMap<String, Context> {
+    private fun getResourceContextMap(resource: String): MutableMap<String, Context> {
         return scriptContext.computeIfAbsent(resource) { HashMap() }
     }
 
@@ -30,24 +29,13 @@ class PolyglotScriptLoader {
     }
 
     fun emitEventToAll(event: String, vararg args: Any) {
-        polyglotContext.forEach { (_, context) ->
-            if (context.events.containsKey(event)) {
-                context.events[event]?.forEach {
-                    it.accept(arrayOf(*args))
-                }
-            }
+        polyglotContext.values.forEach { context ->
+            context.event(event) { it(args) }
         }
     }
 
     fun emitEventTo(resource: String, event: String, vararg args: Any) {
-        if (polyglotContext.containsKey(resource)) {
-            val context = polyglotContext[resource]!!
-            if (context.events.containsKey(event)) {
-                context.events[event]?.forEach {
-                    it.accept(arrayOf(*args))
-                }
-            }
-        }
+        polyglotContext[resource]?.event(event) { it(args) }
         emitEventToAll(resource, "$resource:$event", *args)
     }
 
@@ -63,10 +51,10 @@ class PolyglotScriptLoader {
 
         try {
             executor.submit { context.eval(scriptSource) }.get(5, TimeUnit.SECONDS)
+        } catch (exception: TimeoutException) {
+            error("Script ${scriptSource.name} failed to run in under 5 seconds")
         } catch (exception: Exception) {
-            if (exception is TimeoutException)
-                error("Script ${scriptSource.name} failed to run in under 5 seconds")
-            else exception.printStackTrace()
+            exception.printStackTrace()
         }
     }
 
