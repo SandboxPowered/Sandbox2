@@ -1,5 +1,6 @@
 package org.sandboxpowered.fabric.scripting.polyglot
 
+import com.google.gson.Gson
 import com.google.gson.JsonElement
 import net.minecraft.item.Item
 import net.minecraft.tag.Tag
@@ -8,13 +9,16 @@ import net.minecraft.util.registry.Registry
 import org.graalvm.polyglot.HostAccess.Export
 import org.graalvm.polyglot.Value
 import org.sandboxpowered.fabric.Main
-import java.lang.NullPointerException
+import org.sandboxpowered.fabric.util.getMemberValue
+import org.sandboxpowered.fabric.util.toJSON
 import java.util.function.BiPredicate
 
 class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>) {
 
     private val removalPredicates: MutableList<BiPredicate<Identifier, JsonElement>> = arrayListOf()
+    private val newRecipes: MutableList<JsonElement> = arrayListOf()
     private var removeAll: Boolean = false
+    private val gson = Gson()
 
     fun run() {
         if (removeAll) map.clear() else {
@@ -27,6 +31,16 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
             }
             toRemove.forEach(map::remove)
         }
+        var id = 0
+        newRecipes.forEach {
+            map[Identifier("sandbox", "recipe-${id++}")] = it
+        }
+    }
+
+    @Export
+    fun add(value: Value) {
+        if (!value.hasMembers()) throw UnsupportedOperationException("Unsupported value in recipe creation")
+        newRecipes.add(value.toJSON())
     }
 
     @Export
@@ -93,6 +107,3 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
         return predicate?.and(newPredicate) ?: newPredicate
     }
 }
-
-private fun Value.getMemberValue(identifier: String): String? =
-    if (hasMember(identifier)) getMember(identifier).asString() else null
