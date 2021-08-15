@@ -14,7 +14,7 @@ buildscript {
 plugins {
 	id 'fabric-loom' version '0.8-SNAPSHOT'
 	id 'maven-publish'
-	id 'org.jetbrains.kotlin.jvm' version '1.5.20'
+	id 'org.jetbrains.kotlin.jvm' version '1.5.21'
 	id "org.graalvm.plugin.compiler" version "0.1.0-alpha2"
 }
 
@@ -40,6 +40,9 @@ dependencies {
 	implementation "org.graalvm.js:js:$graalVersion"
 	// necessary to integrate with legacy ScriptEngine based implementation
 	implementation "org.graalvm.js:js-scriptengine:$graalVersion"
+	implementation "io.ktor:ktor-server-core:1.6.2"
+	implementation "io.ktor:ktor-server-netty:1.6.2"
+	implementation 'team.yi.ktor:ktor-banner:0.2.0'
 }
 
 processResources {

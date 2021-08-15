@@ -13,7 +13,7 @@ public class MixinMinecraftClient {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient$IntegratedResourceManager;getSaveProperties()Lnet/minecraft/world/SaveProperties;"))
     public SaveProperties inj(MinecraftClient.IntegratedResourceManager integratedResourceManager) {
         Main.INSTANCE.setResourceManager(integratedResourceManager.getServerResourceManager());
-        Main.INSTANCE.startSandboxServer();
+        Main.INSTANCE.startSandboxIntegratedServer();
         return integratedResourceManager.getSaveProperties();
     }
 }

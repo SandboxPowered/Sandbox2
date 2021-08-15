@@ -12,12 +12,8 @@ import org.spongepowered.asm.mixin.Mixin;
 @Implements(@Interface(iface = PolyBlock.class, prefix = "sbx$", unique = true))
 public class MixinBlock {
 
-    private Block asBlock() {
-        return (Block) (Object) this;
-    }
-
     @NotNull
     public String sbx$id() {
-        return Registry.BLOCK.getId(asBlock()).toString();
+        return Registry.BLOCK.getId((Block) (Object) this).toString();
     }
 }

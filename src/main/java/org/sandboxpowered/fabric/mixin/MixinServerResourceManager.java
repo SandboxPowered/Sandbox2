@@ -14,6 +14,6 @@ public class MixinServerResourceManager {
     @Inject(method = "<init>", at = @At(value = "TAIL"))
     public void main(DynamicRegistryManager registryManager, CommandManager.RegistrationEnvironment commandEnvironment, int functionPermissionLevel, CallbackInfo ci) {
         Main.INSTANCE.setResourceManager((ServerResourceManager) (Object) this);
-        Main.INSTANCE.startSandboxServer();
+        Main.INSTANCE.startSandboxDedicatedServer();
     }
 }
