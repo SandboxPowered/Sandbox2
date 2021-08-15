@@ -10,17 +10,14 @@ fun Value.getMemberValue(identifier: String): String? =
 fun Value.toJSON(): JsonElement = when {
     hasArrayElements() -> {
         val array = JsonArray()
-        for (idx in 0 until arraySize) {
-            val element = getArrayElement(idx)
-            array.add(element.toJSON())
-        }
+        (0 until arraySize)
+            .map { getArrayElement(it).toJSON() }
+            .forEach(array::add)
         array
     }
     hasMembers() -> {
         val obj = JsonObject()
-        for (memberKey in memberKeys) {
-            obj.add(memberKey, getMember(memberKey).toJSON())
-        }
+        memberKeys.forEach { obj.add(it, getMember(it).toJSON()) }
         obj
     }
     isString -> JsonPrimitive(asString())

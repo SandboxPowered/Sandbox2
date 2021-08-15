@@ -1,4 +1,4 @@
-package org.sandboxpowered.fabric.scripting.polyglot
+package org.sandboxpowered.fabric.api.item
 
 import org.graalvm.polyglot.HostAccess.Export
 

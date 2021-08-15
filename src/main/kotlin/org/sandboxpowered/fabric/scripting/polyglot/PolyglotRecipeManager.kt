@@ -2,6 +2,7 @@ package org.sandboxpowered.fabric.scripting.polyglot
 
 import com.google.gson.Gson
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import net.minecraft.item.Item
 import net.minecraft.tag.Tag
 import net.minecraft.util.Identifier
@@ -72,7 +73,7 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
         }
         if (output != null) {
             var tag: Tag<Item>? = null
-            val outputPredicate = BiPredicate<Identifier, JsonElement> { id, json ->
+            val outputPredicate = BiPredicate<Identifier, JsonElement> { _, json ->
                 val obj = json.asJsonObject
                 if(!obj.has("result")) {
                     return@BiPredicate false
