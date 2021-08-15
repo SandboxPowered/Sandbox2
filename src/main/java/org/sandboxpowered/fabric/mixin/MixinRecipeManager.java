@@ -17,7 +17,6 @@ import java.util.Map;
 public class MixinRecipeManager {
     @Inject(method = "apply", at = @At("HEAD"), cancellable = true)
     private void sandbox_recipeManagement(Map<Identifier, JsonElement> map, ResourceManager resourceManager, Profiler profiler, CallbackInfo ci) {
-        Main.INSTANCE.startSandboxServer();
         Main.INSTANCE.handleRecipes(map);
     }
 }

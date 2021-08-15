@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "MixinBootstrap",
+    "MixinMinecraftClient",
     "MixinMinecraftServer",
     "MixinRecipeManager",
     "MixinServerResourceManager"

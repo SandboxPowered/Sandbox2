@@ -18,6 +18,10 @@ object Main {
         loader.load(Side.SERVER)
     }
 
+    fun startSandboxClient() {
+        loader.load(Side.CLIENT)
+    }
+
     fun handleRecipes(map: MutableMap<Identifier, JsonElement>) {
         val recipeManager = PolyglotRecipeManager(map)
         loader.emitEvent("recipes", recipeManager)
