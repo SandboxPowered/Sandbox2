@@ -1,9 +1,14 @@
 package org.sandboxpowered.fabric.scripting.polyglot
 
 import com.google.gson.JsonElement
+import net.minecraft.item.Item
+import net.minecraft.tag.Tag
 import net.minecraft.util.Identifier
+import net.minecraft.util.registry.Registry
 import org.graalvm.polyglot.HostAccess.Export
 import org.graalvm.polyglot.Value
+import org.sandboxpowered.fabric.Main
+import java.lang.NullPointerException
 import java.util.function.BiPredicate
 
 class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>) {
@@ -52,7 +57,28 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
             predicate = mergePredicates(predicate, typePredicate)
         }
         if (output != null) {
-            val outputPredicate = BiPredicate<Identifier, JsonElement> { _, _ -> false }
+            var tag: Tag<Item>? = null
+            val outputPredicate = BiPredicate<Identifier, JsonElement> { id, json ->
+                val obj = json.asJsonObject
+                if(!obj.has("result")) {
+                    return@BiPredicate false
+                }
+                val resultElement = obj.get("result")
+                val resultString = if(resultElement.isJsonObject) {
+                    resultElement.asJsonObject.get("item").asString
+                } else {
+                    resultElement.asString
+                }
+                if(output.startsWith('#')) {
+                    if(tag==null) {
+                        tag = Main.resourceManager.registryTagManager.getTag(Registry.ITEM_KEY, Identifier(output.substring(1))) {
+                            NullPointerException(it.toString())
+                        }
+                    }
+                    return@BiPredicate tag!!.contains(Registry.ITEM.get(Identifier(resultString)))
+                }
+                resultString == output
+            }
             predicate = mergePredicates(predicate, outputPredicate)
         }
 

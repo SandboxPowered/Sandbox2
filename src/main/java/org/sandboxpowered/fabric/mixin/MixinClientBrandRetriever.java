@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 @Mixin(ClientBrandRetriever.class)
 public class MixinClientBrandRetriever {
     /**
-     * @author
+     * @author Coded
      */
     @DontObfuscate
     @Overwrite(remap = false)

@@ -6,7 +6,8 @@
   "mixins": [
     "MixinBootstrap",
     "MixinMinecraftServer",
-    "MixinRecipeManager"
+    "MixinRecipeManager",
+    "MixinServerResourceManager"
   ],
   "client": [
     "MixinClientBrandRetriever"
