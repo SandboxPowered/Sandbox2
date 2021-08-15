@@ -39,8 +39,6 @@ class SandboxLoader {
                         if(extension == "js") sourceBuilder.mimeType("application/javascript+module")
 
                         polyglotLoader.loadScriptContext(it.path.name, sourceBuilder.build())
-
-                        polyglotLoader.emitEventTo(it.path.name, "onResourceLoad")
                     }
                     "jar" -> {
                         if (side == Side.CLIENT) throw UnsupportedOperationException("Unable to load .jar on client")
@@ -57,6 +55,8 @@ class SandboxLoader {
                     }
                 }
             }
+
+            polyglotLoader.emitEventTo(it.path.name, "onResourceLoad")
         }
     }
 
