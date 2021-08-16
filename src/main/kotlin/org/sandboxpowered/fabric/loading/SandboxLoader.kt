@@ -1,18 +1,19 @@
 package org.sandboxpowered.fabric.loading
 
 import com.electronwill.nightconfig.core.file.FileConfig
+import com.google.common.hash.Hashing
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import org.graalvm.polyglot.Source
 import org.sandboxpowered.fabric.Side
 import org.sandboxpowered.fabric.addon.AddonScanner
 import org.sandboxpowered.fabric.scripting.PolyglotScriptLoader
-import org.sandboxpowered.fabric.util.RegexUtil
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.extension
-import kotlin.io.path.name
-import kotlin.io.path.readText
+import kotlin.io.path.*
+import com.google.common.io.Files as GoogleFiles
 
 class SandboxLoader {
 
@@ -20,13 +21,17 @@ class SandboxLoader {
     val resourceContent: MutableMap<String, MutableList<Path>> = hashMapOf()
 
     fun load(side: Side) {
+        //TODO: make client side not scan instead load from list obtained from server
         val addons = AddonScanner.scanDirectory(Path.of("resources"))
+        val cacheDir = Path.of(".sandbox/cache")
+        if (Files.notExists(cacheDir))
+            Files.createDirectories(cacheDir)
         addons.forEach { addon ->
             val scripts = arrayListOf<Path>()
 
-            val commonScripts = addon.config.getPathList(addon.path,"scripts")
-            val clientScripts = addon.config.getPathList(addon.path,"client.scripts")
-            val serverScripts = addon.config.getPathList(addon.path,"server.scripts")
+            val commonScripts = addon.config.getPathList(addon.path, "scripts")
+            val clientScripts = addon.config.getPathList(addon.path, "client.scripts")
+            val serverScripts = addon.config.getPathList(addon.path, "server.scripts")
 
             scripts.addAll(commonScripts)
             when (side) {
@@ -34,7 +39,7 @@ class SandboxLoader {
                 else -> scripts.addAll(serverScripts)
             }
 
-            if(addon.config.contains("files")) {
+            if (addon.config.contains("files")) {
                 val resourceGlobs = addon.config.get<ArrayList<String>>("files")
                 val filter = SandboxFileVisitor(addon.path, resourceGlobs)
                 Files.walkFileTree(addon.path, filter)
@@ -54,7 +59,7 @@ class SandboxLoader {
                             scriptPath.name
                         )
 
-                        if(extension == "js") sourceBuilder.mimeType("application/javascript+module")
+                        if (extension == "js") sourceBuilder.mimeType("application/javascript+module")
 
                         polyglotLoader.loadScriptContext(addon.path.name, sourceBuilder.build())
                     }
@@ -77,7 +82,24 @@ class SandboxLoader {
             polyglotLoader.emitEventTo(addon.path.name, "onResourceLoad")
         }
 
+        val json = JsonObject()
 
+        resourceContent.forEach { (resource, files) ->
+            val resourceJson = JsonObject()
+            val resourceHash = Hashing.md5().hashString(resource, StandardCharsets.UTF_8).toString()
+            val resourceCachePath = cacheDir.resolve(resourceHash)
+            if (Files.notExists(resourceCachePath))
+                Files.createDirectories(resourceCachePath)
+            resourceJson.addProperty("_domain", resource)
+            files.forEach {
+                val hash = GoogleFiles.hash(it.asFile, Hashing.md5()).toString()
+                it.copyTo(resourceCachePath.resolve(hash))
+                resourceJson.addProperty(hash, it.invariantSeparatorsPathString)
+            }
+            json.add(resourceHash, resourceJson)
+        }
+
+        cacheDir.resolve("manifest.json").writeText(Gson().toJson(json), StandardCharsets.UTF_8)
     }
 
     private fun scriptExtensionToLanguage(extension: String): String {

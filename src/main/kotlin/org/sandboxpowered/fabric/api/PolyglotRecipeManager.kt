@@ -1,8 +1,7 @@
-package org.sandboxpowered.fabric.scripting.polyglot
+package org.sandboxpowered.fabric.api
 
 import com.google.gson.Gson
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import net.minecraft.item.Item
 import net.minecraft.tag.Tag
 import net.minecraft.util.Identifier
@@ -75,18 +74,21 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
             var tag: Tag<Item>? = null
             val outputPredicate = BiPredicate<Identifier, JsonElement> { _, json ->
                 val obj = json.asJsonObject
-                if(!obj.has("result")) {
+                if (!obj.has("result")) {
                     return@BiPredicate false
                 }
                 val resultElement = obj.get("result")
-                val resultString = if(resultElement.isJsonObject) {
+                val resultString = if (resultElement.isJsonObject) {
                     resultElement.asJsonObject.get("item").asString
                 } else {
                     resultElement.asString
                 }
-                if(output.startsWith('#')) {
-                    if(tag==null) {
-                        tag = Main.resourceManager.registryTagManager.getTag(Registry.ITEM_KEY, Identifier(output.substring(1))) {
+                if (output.startsWith('#')) {
+                    if (tag == null) {
+                        tag = Main.resourceManager.registryTagManager.getTag(
+                            Registry.ITEM_KEY,
+                            Identifier(output.substring(1))
+                        ) {
                             NullPointerException(it.toString())
                         }
                     }

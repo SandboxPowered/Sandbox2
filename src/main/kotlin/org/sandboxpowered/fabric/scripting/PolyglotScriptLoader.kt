@@ -3,8 +3,8 @@ package org.sandboxpowered.fabric.scripting
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.HostAccess
 import org.graalvm.polyglot.Source
+import org.sandboxpowered.fabric.api.SandboxResourcePolyglotContext
 import org.sandboxpowered.fabric.scripting.polyglot.PolyglotFileSystem
-import org.sandboxpowered.fabric.scripting.polyglot.SandboxResourcePolyglotContext
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException

@@ -1,4 +1,4 @@
-package org.sandboxpowered.fabric.scripting.polyglot
+package org.sandboxpowered.fabric.api
 
 import org.graalvm.polyglot.HostAccess.Export
 import org.graalvm.polyglot.Value
@@ -55,5 +55,10 @@ class SandboxResourcePolyglotContext(private val resource: String, private val s
     fun saveResourceFile(path: String, data: String): Boolean {
         println("Saving: [$path]")
         return false
+    }
+
+    @Export
+    fun getStateProperty(name: String, type: String, vararg extra: Value): PolyglotStateProperty? {
+        return StateManagement.getStateProperty(name, type, *extra)
     }
 }
