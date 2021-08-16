@@ -1,12 +1,14 @@
 package org.sandboxpowered.fabric.loading
 
+import com.electronwill.nightconfig.core.file.FileConfig
 import org.graalvm.polyglot.Source
 import org.sandboxpowered.fabric.Side
 import org.sandboxpowered.fabric.addon.AddonScanner
 import org.sandboxpowered.fabric.scripting.PolyglotScriptLoader
 import org.sandboxpowered.fabric.util.RegexUtil
-import java.lang.UnsupportedOperationException
+import java.io.File
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.extension
 import kotlin.io.path.name
@@ -15,19 +17,35 @@ import kotlin.io.path.readText
 class SandboxLoader {
 
     val polyglotLoader = PolyglotScriptLoader()
+    val resourceContent: MutableMap<String, MutableList<Path>> = hashMapOf()
 
     fun load(side: Side) {
         val addons = AddonScanner.scanDirectory(Path.of("resources"))
-        addons.forEach {
-            val scripts = arrayListOf<String>()
+        addons.forEach { addon ->
+            val scripts = arrayListOf<Path>()
 
-            if (it.config.contains("scripts")) scripts.addAll(it.config.get<ArrayList<String>>("scripts"))
-            if (it.config.contains("${side.side}.scripts")) scripts.addAll(it.config.get<ArrayList<String>>("${side.side}.scripts"))
+            val commonScripts = addon.config.getPathList(addon.path,"scripts")
+            val clientScripts = addon.config.getPathList(addon.path,"client.scripts")
+            val serverScripts = addon.config.getPathList(addon.path,"server.scripts")
 
-            val basePath = it.path
-            scripts.forEach { script ->
-                val regex = RegexUtil.convertGlobToRegex(script)
-                val scriptPath = basePath.resolve(script)
+            scripts.addAll(commonScripts)
+            when (side) {
+                Side.CLIENT -> scripts.addAll(clientScripts)
+                else -> scripts.addAll(serverScripts)
+            }
+
+            if(addon.config.contains("files")) {
+                val resourceGlobs = addon.config.get<ArrayList<String>>("files")
+                val filter = SandboxFileVisitor(addon.path, resourceGlobs)
+                Files.walkFileTree(addon.path, filter)
+
+                filter.output.addAll(commonScripts)
+                filter.output.addAll(clientScripts)
+
+                resourceContent[addon.path.name] = filter.output
+            }
+
+            scripts.forEach { scriptPath ->
                 when (val extension = scriptPath.extension) {
                     "js", "py" -> {
                         val sourceBuilder = Source.newBuilder(
@@ -38,7 +56,7 @@ class SandboxLoader {
 
                         if(extension == "js") sourceBuilder.mimeType("application/javascript+module")
 
-                        polyglotLoader.loadScriptContext(it.path.name, sourceBuilder.build())
+                        polyglotLoader.loadScriptContext(addon.path.name, sourceBuilder.build())
                     }
                     "jar" -> {
                         if (side == Side.CLIENT) throw UnsupportedOperationException("Unable to load .jar on client")
@@ -56,8 +74,10 @@ class SandboxLoader {
                 }
             }
 
-            polyglotLoader.emitEventTo(it.path.name, "onResourceLoad")
+            polyglotLoader.emitEventTo(addon.path.name, "onResourceLoad")
         }
+
+
     }
 
     private fun scriptExtensionToLanguage(extension: String): String {
@@ -72,3 +92,12 @@ class SandboxLoader {
         polyglotLoader.emitEventToAll(event, *args)
     }
 }
+
+private fun FileConfig.getPathList(base: Path, s: String): List<Path> {
+    if (contains(s))
+        return get<List<String>>(s).map { base.resolve(it) }
+    return emptyList()
+}
+
+private val Path.asFile: File
+    get() = toFile()

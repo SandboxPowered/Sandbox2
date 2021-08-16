@@ -26,8 +26,8 @@ class WebServer {
                     call.respond("Sandbox2 Content Server.")
                 }
                 get("/data") {
-                    call.respondText("""
-                        {
+                    call.respondText(
+                        """{
                           "players": {
                             "online": [
                               {
@@ -46,8 +46,8 @@ class WebServer {
                           ],
                           "tps": 20,
                           "uptime": 0
-                        }
-                    """.trimIndent(), ContentType.defaultForFileExtension("json")
+                        }""".trimIndent(),
+                        ContentType.defaultForFileExtension("json")
                     )
                 }
             }
