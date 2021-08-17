@@ -4,6 +4,7 @@ import com.electronwill.nightconfig.core.file.FileConfig
 import com.google.common.hash.Hashing
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import org.apache.logging.log4j.LogManager.getLogger
 import org.graalvm.polyglot.Source
 import org.sandboxpowered.fabric.Side
 import org.sandboxpowered.fabric.addon.AddonScanner
@@ -19,6 +20,8 @@ class SandboxLoader {
 
     val polyglotLoader = PolyglotScriptLoader()
     val resourceContent: MutableMap<String, MutableList<Path>> = hashMapOf()
+
+    private val log = getLogger()
 
     fun load(side: Side) {
         //TODO: make client side not scan instead load from list obtained from server
@@ -82,24 +85,29 @@ class SandboxLoader {
             polyglotLoader.emitEventTo(addon.path.name, "onResourceLoad")
         }
 
-        val json = JsonObject()
+        log.info("Loaded ${addons.size} resources")
 
-        resourceContent.forEach { (resource, files) ->
-            val resourceJson = JsonObject()
-            val resourceHash = Hashing.md5().hashString(resource, StandardCharsets.UTF_8).toString()
-            val resourceCachePath = cacheDir.resolve(resourceHash)
-            if (Files.notExists(resourceCachePath))
-                Files.createDirectories(resourceCachePath)
-            resourceJson.addProperty("_domain", resource)
-            files.forEach {
-                val hash = GoogleFiles.hash(it.asFile, Hashing.md5()).toString()
-                it.copyTo(resourceCachePath.resolve(hash))
-                resourceJson.addProperty(hash, it.invariantSeparatorsPathString)
+        if (side == Side.SERVER) {
+            val json = JsonObject()
+
+            resourceContent.forEach { (resource, files) ->
+                val resourceJson = JsonObject()
+                val resourceHash = Hashing.md5().hashString(resource, StandardCharsets.UTF_8).toString()
+                val resourceCachePath = cacheDir.resolve(resourceHash)
+                if (Files.notExists(resourceCachePath))
+                    Files.createDirectories(resourceCachePath)
+                resourceJson.addProperty("_domain", resource)
+                files.forEach {
+                    val hash = GoogleFiles.hash(it.asFile, Hashing.md5()).toString()
+                    it.copyTo(resourceCachePath.resolve(hash), true)
+                    resourceJson.addProperty(hash, it.invariantSeparatorsPathString)
+                }
+                json.add(resourceHash, resourceJson)
             }
-            json.add(resourceHash, resourceJson)
-        }
 
-        cacheDir.resolve("manifest.json").writeText(Gson().toJson(json), StandardCharsets.UTF_8)
+            cacheDir.resolve("manifest.json").writeText(Gson().toJson(json), StandardCharsets.UTF_8)
+            log.info("Updated client resource cache")
+        }
     }
 
     private fun scriptExtensionToLanguage(extension: String): String {

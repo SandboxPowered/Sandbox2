@@ -8,8 +8,12 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import org.apache.logging.log4j.LogManager.getLogger
 import team.yi.ktor.features.banner
+import kotlin.io.path.Path
+import kotlin.io.path.isDirectory
+import kotlin.io.path.notExists
 
 class WebServer {
+    private val globalPath = Path(".sandbox/cache/").toAbsolutePath()
     fun start() {
         val log = getLogger()
         embeddedServer(Netty, port = 25566) {
@@ -25,30 +29,22 @@ class WebServer {
                 get("/") {
                     call.respond("Sandbox2 Content Server.")
                 }
-                get("/data") {
-                    call.respondText(
-                        """{
-                          "players": {
-                            "online": [
-                              {
-                                "id": "idhere",
-                                "name": "namehere"
-                              }
-                            ],
-                            "max": 100
-                          },
-                          "dimensions": [
-                            {
-                              "id": "minecraft:overworld",
-                              "time": 360000000,
-                              "weather": "clear"
-                            }
-                          ],
-                          "tps": 20,
-                          "uptime": 0
-                        }""".trimIndent(),
-                        ContentType.defaultForFileExtension("json")
-                    )
+                get("/assets/{path...}") {
+                    val params = call.parameters.getAll("path") ?: emptyList()
+                    if (params.isEmpty()) {
+                        call.respond(HttpStatusCode.NotFound, "Unknown Path")
+                    } else {
+                        val cachePath = globalPath.resolve(params.joinToString("/")).normalize()
+
+                        when {
+                            !cachePath.startsWith(globalPath) -> call.respond(
+                                HttpStatusCode.Forbidden,
+                                "Invalid Access"
+                            )
+                            cachePath.notExists() or cachePath.isDirectory() -> call.respond(HttpStatusCode.NotFound, "Unknown Path")
+                            else -> call.respondFile(cachePath.toFile())
+                        }
+                    }
                 }
             }
         }.start(false)
