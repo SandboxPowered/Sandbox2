@@ -18,13 +18,21 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
     private val removalPredicates: MutableList<BiPredicate<Identifier, JsonElement>> = arrayListOf()
     private val newRecipes: MutableList<JsonElement> = arrayListOf()
     private var removeAll: Boolean = false
+    private val inputReplacement: MutableList<Triple<String, String, BiPredicate<Identifier,JsonElement>?>> = arrayListOf()
 
     fun run() {
         if (removeAll) map.clear()
-        else map.removeIf { t, u -> removalPredicates.any { it.test(t, u) } }
+        else map.removeIf { id, json -> removalPredicates.any { it.test(id, json) } }
         var id = 0
         newRecipes.forEach {
             map[Identifier("sandbox", "recipe-${id++}")] = it
+        }
+        inputReplacement.forEach { (input, output, filter) ->
+            map.forEach { (id, json) ->
+                if (filter == null || filter.test(id, json)) {
+                    TODO("Find input values and replace")
+                }
+            }
         }
     }
 
@@ -35,8 +43,14 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
     }
 
     @Export
-    fun remove(value: Value) {
-        if (!value.hasMembers()) throw UnsupportedOperationException("Unsupported value in recipe removal")
+    fun replaceInput(input: String, output: String, filterInput: Value?) {
+        val filter = filterInput?.let(this::convertValueToRecipeFilter)
+
+        inputReplacement.add(Triple(input, output, filter))
+    }
+
+    private fun convertValueToRecipeFilter(value: Value): BiPredicate<Identifier, JsonElement>? {
+        if (!value.hasMembers()) throw UnsupportedOperationException("Unsupported value for recipe filter")
 
         var predicate: BiPredicate<Identifier, JsonElement>? = null
 
@@ -89,6 +103,14 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
             }
             predicate = mergePredicates(predicate, outputPredicate)
         }
+        return predicate
+    }
+
+    @Export
+    fun remove(value: Value) {
+        if (!value.hasMembers()) throw UnsupportedOperationException("Unsupported value in recipe removal")
+
+        val predicate = convertValueToRecipeFilter(value)
 
         if (predicate != null) removalPredicates += predicate
         else removeAll = true
