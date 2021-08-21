@@ -14,7 +14,7 @@ object StateManagement {
             stateMap.computeIfAbsent(hash(name, type)) { PolyglotStateProperty.from(name, type) }
         }
         PolyglotStateProperty.INT -> {
-            val values = extra.map { it.asInt() }.toTypedArray()
+            val values = extra.map(Value::asInt).toTypedArray()
             stateMap.computeIfAbsent(hash(name, type, values)) {
                 PolyglotStateProperty.from(name, type, values)
             }
