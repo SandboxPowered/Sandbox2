@@ -41,8 +41,7 @@ object Main {
         val c = Properties::class.java
         c.declaredFields.forEach {
             val prop = it.get(null)
-            if (prop is Property<*>)
-                StateManagement.putInternalStateProperty(prop)
+            if (prop is Property<*>) StateManagement.putInternalStateProperty(prop)
         }
     }
 

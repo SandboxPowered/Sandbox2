@@ -1,6 +1,5 @@
 package org.sandboxpowered.fabric.api
 
-import com.google.gson.Gson
 import com.google.gson.JsonElement
 import net.minecraft.item.Item
 import net.minecraft.tag.Tag
@@ -10,6 +9,7 @@ import org.graalvm.polyglot.HostAccess.Export
 import org.graalvm.polyglot.Value
 import org.sandboxpowered.fabric.Main
 import org.sandboxpowered.fabric.util.getMemberValue
+import org.sandboxpowered.fabric.util.removeIf
 import org.sandboxpowered.fabric.util.toJSON
 import java.util.function.BiPredicate
 
@@ -18,19 +18,10 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
     private val removalPredicates: MutableList<BiPredicate<Identifier, JsonElement>> = arrayListOf()
     private val newRecipes: MutableList<JsonElement> = arrayListOf()
     private var removeAll: Boolean = false
-    private val gson = Gson()
 
     fun run() {
-        if (removeAll) map.clear() else {
-            val toRemove = arrayListOf<Identifier>()
-            map.forEach { (t, u) ->
-                removalPredicates.forEach {
-                    if (it.test(t, u))
-                        toRemove.add(t)
-                }
-            }
-            toRemove.forEach(map::remove)
-        }
+        if (removeAll) map.clear()
+        else map.removeIf { t, u -> removalPredicates.any { it.test(t, u) } }
         var id = 0
         newRecipes.forEach {
             map[Identifier("sandbox", "recipe-${id++}")] = it
