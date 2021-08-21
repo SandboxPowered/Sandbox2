@@ -18,7 +18,8 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
     private val removalPredicates: MutableList<BiPredicate<Identifier, JsonElement>> = arrayListOf()
     private val newRecipes: MutableList<JsonElement> = arrayListOf()
     private var removeAll: Boolean = false
-    private val inputReplacement: MutableList<Triple<String, String, BiPredicate<Identifier,JsonElement>?>> = arrayListOf()
+    private val inputReplacement: MutableList<Triple<String, String, BiPredicate<Identifier, JsonElement>?>> =
+        arrayListOf()
 
     fun run() {
         if (removeAll) map.clear()
@@ -107,13 +108,18 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
     }
 
     @Export
+    fun removeAll() {
+        removeAll = true
+    }
+
+    @Export
     fun remove(value: Value) {
         if (!value.hasMembers()) throw UnsupportedOperationException("Unsupported value in recipe removal")
 
         val predicate = convertValueToRecipeFilter(value)
 
         if (predicate != null) removalPredicates += predicate
-        else removeAll = true
+        else throw UnsupportedOperationException("Unsupported recipe filter $value")
     }
 
     private fun mergePredicates(
