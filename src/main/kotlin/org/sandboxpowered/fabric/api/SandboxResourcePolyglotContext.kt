@@ -23,7 +23,7 @@ class SandboxResourcePolyglotContext(private val resource: String, private val s
     @Export
     fun emit(event: String, vararg args: Any) {
         if (event.contains(':')) scriptLoader.emitEventToAll(event, *args)
-        else scriptLoader.emitEventTo(resource, event, *args)
+        else scriptLoader.emitEventTo(resource, event, args = args)
     }
 
     @Export

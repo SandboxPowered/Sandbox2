@@ -8,7 +8,7 @@ import net.minecraft.util.registry.Registry
 import org.graalvm.polyglot.HostAccess.Export
 import org.graalvm.polyglot.Value
 import org.sandboxpowered.fabric.Main
-import org.sandboxpowered.fabric.util.getMemberValue
+import org.sandboxpowered.fabric.util.getMemberValueStr
 import org.sandboxpowered.fabric.util.removeIf
 import org.sandboxpowered.fabric.util.toJSON
 import java.util.function.BiPredicate
@@ -55,10 +55,10 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
 
         var predicate: BiPredicate<Identifier, JsonElement>? = null
 
-        val id = value.getMemberValue("id")
-        val output = value.getMemberValue("output")
-        val domain = value.getMemberValue("domain")
-        val type = value.getMemberValue("type")
+        val id = value.getMemberValueStr("id")
+        val output = value.getMemberValueStr("output")
+        val domain = value.getMemberValueStr("domain")
+        val type = value.getMemberValueStr("type")
 
         if (id != null) {
             val idPredicate = BiPredicate<Identifier, JsonElement> { identifier, _ -> identifier.toString() == id }
