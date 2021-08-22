@@ -1,6 +1,7 @@
 package org.sandboxpowered.fabric.api
 
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import net.minecraft.item.Item
 import net.minecraft.tag.Tag
 import net.minecraft.util.Identifier
@@ -31,10 +32,14 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
         inputReplacement.forEach { (input, output, filter) ->
             map.forEach { (id, json) ->
                 if (filter == null || filter.test(id, json)) {
-                    TODO("Find input values and replace")
+                    replace(json, input, output)
                 }
             }
         }
+    }
+
+    private fun replace(jsonElement: JsonElement, input: String, output: String) {
+        TODO("not implemented yet")
     }
 
     @Export
@@ -125,7 +130,9 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
     private fun mergePredicates(
         predicate: BiPredicate<Identifier, JsonElement>?,
         newPredicate: BiPredicate<Identifier, JsonElement>
-    ): BiPredicate<Identifier, JsonElement> {
-        return predicate?.and(newPredicate) ?: newPredicate
-    }
+    ): BiPredicate<Identifier, JsonElement> = predicate?.and(newPredicate) ?: newPredicate
+}
+
+private operator fun JsonObject.contains(memberName: String): Boolean {
+    return has(memberName)
 }
