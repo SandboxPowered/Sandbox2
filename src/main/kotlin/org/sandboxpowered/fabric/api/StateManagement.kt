@@ -37,7 +37,6 @@ object StateManagement {
             append(type)
             extra.forEach(this::append)
         }
-        @Suppress("UnstableApiUsage") // apparently we ain't got anything better
-        return Hashing.sha256()?.hashString(compiled, StandardCharsets.UTF_8)?.toString() ?: compiled
+        return compiled.hash(Hash.SHA256)
     }
 }
