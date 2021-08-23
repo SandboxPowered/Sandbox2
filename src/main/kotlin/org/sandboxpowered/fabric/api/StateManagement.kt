@@ -1,9 +1,9 @@
 package org.sandboxpowered.fabric.api
 
-import com.google.common.hash.Hashing
 import net.minecraft.state.property.Property
 import org.graalvm.polyglot.Value
-import java.nio.charset.StandardCharsets
+import org.sandboxpowered.fabric.util.Hash
+import org.sandboxpowered.fabric.util.hash
 
 object StateManagement {
     private val stateMap: MutableMap<String, PolyglotStateProperty> = hashMapOf()
@@ -14,7 +14,10 @@ object StateManagement {
             stateMap.computeIfAbsent(hash(name, type)) { PolyglotStateProperty.from(name, type) }
         }
         PolyglotStateProperty.INT -> {
-            val values = extra.map(Value::asInt).toTypedArray()
+            require(extra.size == 2) { "Invalid number of arguments specified, expected 2 got ${extra.size}" }
+            var values = extra.map(Value::asInt).toTypedArray()
+
+            values = (values[0]..values[1]).toList().toTypedArray()
             stateMap.computeIfAbsent(hash(name, type, values)) {
                 PolyglotStateProperty.from(name, type, values)
             }
@@ -29,15 +32,14 @@ object StateManagement {
     }
 
     private fun PolyglotStateProperty.hash(): String =
-        hash(name, type, extra)
+        hash(name, type, values)
 
-    private fun hash(name: String, type: String, extra: Array<out Any> = emptyArray()): String {
+    private fun hash(name: String, type: String, extra: Array<*> = emptyArray<Any>()): String {
         val compiled = buildString {
             append(name)
             append(type)
             extra.forEach(this::append)
         }
-        @Suppress("UnstableApiUsage") // apparently we ain't got anything better
-        return Hashing.sha256()?.hashString(compiled, StandardCharsets.UTF_8)?.toString() ?: compiled
+        return compiled.hash(Hash.SHA256)
     }
 }

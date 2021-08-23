@@ -7,9 +7,8 @@ import org.sandboxpowered.fabric.api.SandboxResourcePolyglotContext
 import org.sandboxpowered.fabric.api.item.PolyglotGlobalItemManager
 import org.sandboxpowered.fabric.api.item.PolyglotItemManager
 import org.sandboxpowered.fabric.scripting.polyglot.PolyglotFileSystem
+import org.sandboxpowered.fabric.util.TimingUtil
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 
 class PolyglotScriptLoader {
     private val executor = Executors.newSingleThreadExecutor()
@@ -56,12 +55,14 @@ class PolyglotScriptLoader {
         val bindings = context.getBindings(scriptSource.language)
         bindings.putMember("sandbox", getPolyglotContext(resource))
 
-        try {
-            executor.submit { context.eval(scriptSource) }.get(5, TimeUnit.SECONDS)
-        } catch (exception: TimeoutException) {
-            error("Script ${scriptSource.name} failed to run in under 5 seconds")
-        } catch (exception: Exception) {
-            exception.printStackTrace()
+        val result = TimingUtil.execute(func = { context.eval(scriptSource) }, executor = executor)
+
+        if (result is TimingUtil.Timeout) {
+            println("Script $resource:${scriptSource.name} failed to run in under 5 seconds")
+            //TODO: cancel and unload this script's resource due to failure, throw error if addon is deemed required
+        } else if (result is TimingUtil.Error) {
+            throw RuntimeException("Encountered unknown error when executing script $resource:${scriptSource.name}",
+                result.error)
         }
     }
 
