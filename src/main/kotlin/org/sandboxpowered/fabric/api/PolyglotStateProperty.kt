@@ -27,13 +27,13 @@ class PolyglotStateProperty private constructor(
         )
 
         fun from(name: String, type: String, extra: Array<*> = emptyArray<Any>()) = PolyglotStateProperty(
-            property = test(name, type, extra),
+            property = createVanillaProperty(name, type, extra),
             name = name,
             type = type,
             values = extra
         )
 
-        private fun test(name: String, type: String, extra: Array<*> = emptyArray<Any>()): Property<*>? {
+        private fun createVanillaProperty(name: String, type: String, extra: Array<*> = emptyArray<Any>()): Property<*>? {
             return when (type) {
                 INT -> IntProperty.of(name, extra.first() as Int, extra.last() as Int)
                 BOOLEAN -> BooleanProperty.of(name)
