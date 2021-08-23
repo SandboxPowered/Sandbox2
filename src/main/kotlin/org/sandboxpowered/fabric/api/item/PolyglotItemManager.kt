@@ -7,7 +7,7 @@ import org.graalvm.polyglot.Value
 class PolyglotItemManager(private val domain: String, private val global: PolyglotGlobalItemManager) {
     @Export
     fun add(id: String, value: Value) {
-        if (!value.hasMembers()) throw UnsupportedOperationException("Unsupported value for item registration")
+        require(value.hasMembers()) { "Unsupported value as custom item" }
         global.addItem(Identifier(domain, id), value)
     }
 }
