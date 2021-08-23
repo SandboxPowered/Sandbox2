@@ -4,14 +4,18 @@ import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.HostAccess
 import org.graalvm.polyglot.Source
 import org.sandboxpowered.fabric.api.SandboxResourcePolyglotContext
+import org.sandboxpowered.fabric.api.item.PolyglotGlobalItemManager
+import org.sandboxpowered.fabric.api.item.PolyglotItemManager
 import org.sandboxpowered.fabric.scripting.polyglot.PolyglotFileSystem
 import org.sandboxpowered.fabric.util.TimingUtil
 import java.util.concurrent.Executors
 
 class PolyglotScriptLoader {
     private val executor = Executors.newSingleThreadExecutor()
-    private val scriptContext: MutableMap<String, MutableMap<String, Context>> = HashMap()
-    private val polyglotContext: MutableMap<String, SandboxResourcePolyglotContext> = HashMap()
+    private val scriptContext: MutableMap<String, MutableMap<String, Context>> = hashMapOf()
+    private val polyglotContext: MutableMap<String, SandboxResourcePolyglotContext> = hashMapOf()
+    private val globalItemManager = PolyglotGlobalItemManager()
+    private val itemManager: MutableMap<String, PolyglotItemManager> = hashMapOf()
 
     private fun buildContext(): Context = Context.newBuilder("js", "python")
         .allowExperimentalOptions(true)
@@ -23,9 +27,11 @@ class PolyglotScriptLoader {
         return scriptContext.computeIfAbsent(resource) { HashMap() }
     }
 
-    private fun getPolyglotContext(resource: String): SandboxResourcePolyglotContext {
-        return polyglotContext.computeIfAbsent(resource) { SandboxResourcePolyglotContext(it, this) }
-    }
+    private fun getPolyglotContext(resource: String): SandboxResourcePolyglotContext =
+        polyglotContext.computeIfAbsent(resource) { SandboxResourcePolyglotContext(it, this) }
+
+    fun getItemManager(resource: String): PolyglotItemManager =
+        itemManager.computeIfAbsent(resource) { PolyglotItemManager(it, globalItemManager) }
 
     fun emitEventToAll(event: String, vararg args: Any) {
         polyglotContext.values.forEach { context ->
@@ -33,9 +39,10 @@ class PolyglotScriptLoader {
         }
     }
 
-    fun emitEventTo(resource: String, event: String, vararg args: Any) {
+    fun emitEventTo(resource: String, event: String, emitToAll: Boolean = true, vararg args: Any) {
         polyglotContext[resource]?.event(event) { it(args) }
-        emitEventToAll(resource, "$resource:$event", *args)
+        if (emitToAll)
+            emitEventToAll(resource, "$resource:$event", *args)
     }
 
     fun loadScriptContext(resource: String, scriptSource: Source) {
