@@ -9,7 +9,6 @@ import org.sandboxpowered.fabric.api.PolyglotStateProperty
 class PolyglotBlock(settings: Settings, private val possibleStates: List<PolyglotStateProperty>?, value: Value) : Block(settings) {
     override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
         super.appendProperties(builder)
-        println(hackOverwrite)
         hackOverwrite?.forEach {
             if (it.property != null) {
                 builder.add(it.property)
