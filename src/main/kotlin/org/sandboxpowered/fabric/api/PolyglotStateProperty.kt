@@ -5,18 +5,10 @@ import org.graalvm.polyglot.HostAccess.Export
 
 class PolyglotStateProperty private constructor(
     private val property: Property<*>?,
-    @Export val name: String,
-    @Export val type: String,
-    val extra: Array<out Any>
+    @JvmField @Export val name: String,
+    @JvmField @Export val type: String,
+    @JvmField @Export val values: Array<*>
 ) {
-    // TODO: Coded : figure out what to do with this
-    //Int Property
-    @Export
-    fun values(): Array<Int> {
-        if (type == INT) return extra as Array<Int>
-        throw UnsupportedOperationException("Cannot get minimum value of $type property")
-    }
-
     companion object {
         infix fun from(property: Property<*>) = PolyglotStateProperty(
             property = property,
@@ -28,17 +20,17 @@ class PolyglotStateProperty private constructor(
                 is EnumProperty -> ENUM
                 else -> error("Unknown Property type: $property")
             },
-            extra = when (property) {
+            values = when (property) {
                 is BooleanProperty -> emptyArray()
                 else -> property.values.toTypedArray()
             }
         )
 
-        fun from(name: String, type: String, extra: Array<out Any> = emptyArray()) = PolyglotStateProperty(
+        fun from(name: String, type: String, extra: Array<*> = emptyArray<Any>()) = PolyglotStateProperty(
             property = null,
             name = name,
             type = type,
-            extra = extra
+            values = extra
         )
 
         const val BOOLEAN = "boolean"

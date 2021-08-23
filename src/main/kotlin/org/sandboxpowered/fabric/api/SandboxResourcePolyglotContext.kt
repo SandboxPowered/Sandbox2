@@ -58,7 +58,7 @@ class SandboxResourcePolyglotContext(private val resource: String, private val s
     }
 
     @Export
-    fun getStateProperty(name: String, type: String, vararg extra: Value): PolyglotStateProperty? {
+    fun getStateProperty(name: String, type: String, vararg extra: Value): PolyglotStateProperty {
         return StateManagement.getStateProperty(name, type, *extra)
     }
 }
