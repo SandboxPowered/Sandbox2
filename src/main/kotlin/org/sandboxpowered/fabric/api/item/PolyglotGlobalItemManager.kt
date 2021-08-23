@@ -13,15 +13,9 @@ import org.sandboxpowered.fabric.util.getMemberValueStr
 import org.sandboxpowered.fabric.util.set
 
 class PolyglotGlobalItemManager {
-    private val archetypeMap: Map<String, (Value) -> Item>
-
-    init {
-        val builder = ImmutableMap.builder<String, (Value) -> Item>()
-
-        builder["item"] = { PolyglotItem(itemPropertiesToSettings(it), it) }
-
-        archetypeMap = builder.build()
-    }
+    private val archetypeMap: Map<String, (Value) -> Item> = ImmutableMap.builder<String, (Value) -> Item>().apply {
+        this["item"] = { PolyglotItem(itemPropertiesToSettings(it), it) }
+    }.build()
 
     private fun itemPropertiesToSettings(value: Value): Item.Settings {
         val settings = Item.Settings()
