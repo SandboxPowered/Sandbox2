@@ -22,6 +22,11 @@ fun Value.toJSON(): JsonElement = when {
     }
     isString -> JsonPrimitive(asString())
     isBoolean -> JsonPrimitive(asBoolean())
-    isNumber -> JsonPrimitive(asInt())
+    isNumber -> when {
+        fitsInInt() -> JsonPrimitive(asInt())
+        fitsInLong() -> JsonPrimitive(asLong())
+        fitsInFloat() -> JsonPrimitive(asFloat())
+        else -> JsonNull.INSTANCE
+    }
     else -> JsonNull.INSTANCE
 }
