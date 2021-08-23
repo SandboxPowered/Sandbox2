@@ -4,7 +4,7 @@ import net.minecraft.state.property.*
 import org.graalvm.polyglot.HostAccess.Export
 
 class PolyglotStateProperty private constructor(
-    private val property: Property<*>?,
+    val property: Property<*>?,
     @JvmField @Export val name: String,
     @JvmField @Export val type: String,
     @JvmField @Export val values: Array<*>
@@ -27,11 +27,19 @@ class PolyglotStateProperty private constructor(
         )
 
         fun from(name: String, type: String, extra: Array<*> = emptyArray<Any>()) = PolyglotStateProperty(
-            property = null,
+            property = test(name, type, extra),
             name = name,
             type = type,
             values = extra
         )
+
+        private fun test(name: String, type: String, extra: Array<*> = emptyArray<Any>()): Property<*>? {
+            return when (type) {
+                INT -> IntProperty.of(name, extra.first() as Int, extra.last() as Int)
+                BOOLEAN -> BooleanProperty.of(name)
+                else -> null
+            }
+        }
 
         const val BOOLEAN = "boolean"
         const val INT = "int"

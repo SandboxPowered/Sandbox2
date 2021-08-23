@@ -4,6 +4,8 @@ import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.HostAccess
 import org.graalvm.polyglot.Source
 import org.sandboxpowered.fabric.api.SandboxResourcePolyglotContext
+import org.sandboxpowered.fabric.api.block.PolyglotBlockManager
+import org.sandboxpowered.fabric.api.block.PolyglotGlobalBlockManager
 import org.sandboxpowered.fabric.scripting.polyglot.PolyglotFileSystem
 import org.sandboxpowered.fabric.util.TimingUtil
 import java.util.concurrent.Executors
@@ -12,6 +14,8 @@ class PolyglotScriptLoader {
     private val executor = Executors.newSingleThreadExecutor()
     private val scriptContext: MutableMap<String, MutableMap<String, Context>> = HashMap()
     private val polyglotContext: MutableMap<String, SandboxResourcePolyglotContext> = HashMap()
+    private val globalBlockManager = PolyglotGlobalBlockManager()
+    private val blockManagers: MutableMap<String, PolyglotBlockManager> = hashMapOf()
 
     private fun buildContext(): Context = Context.newBuilder("js", "python")
         .allowExperimentalOptions(true)
@@ -33,9 +37,10 @@ class PolyglotScriptLoader {
         }
     }
 
-    fun emitEventTo(resource: String, event: String, vararg args: Any) {
+    fun emitEventTo(resource: String, event: String, emitToAll: Boolean = true, vararg args: Any) {
         polyglotContext[resource]?.event(event) { it(args) }
-        emitEventToAll(resource, "$resource:$event", *args)
+        if (emitToAll)
+            emitEventToAll(resource, "$resource:$event", *args)
     }
 
     fun loadScriptContext(resource: String, scriptSource: Source) {
@@ -69,6 +74,9 @@ class PolyglotScriptLoader {
     fun markEventAsNetCapable(string: String) {
 
     }
+
+    fun getBlockManager(it: String): PolyglotBlockManager =
+        blockManagers.computeIfAbsent(it) { PolyglotBlockManager(it, globalBlockManager) }
 }
 
 private inline fun <reified T : Annotation> HostAccess.Builder.allowAccessAnnotatedBy(): HostAccess.Builder {

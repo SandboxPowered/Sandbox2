@@ -87,6 +87,10 @@ class SandboxLoader {
 
         log.info("Loaded ${addons.size} resources")
 
+        resourceContent.keys.forEach {
+            polyglotLoader.emitEventTo(it, "blocks", false, polyglotLoader.getBlockManager(it))
+        }
+
         if (side == Side.SERVER) {
             val json = JsonObject()
 
