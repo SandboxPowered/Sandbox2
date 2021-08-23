@@ -9,13 +9,11 @@ import java.nio.file.attribute.FileAttribute
 
 class PolyglotFileSystem : FileSystem {
     override fun parsePath(uri: URI?): Path {
-        println(uri)
-        return Path.of(uri)
+        TODO("Not yet implemented")
     }
 
     override fun parsePath(path: String?): Path {
-        println(path)
-        return Path.of(path)
+        TODO("Not yet implemented")
     }
 
     override fun checkAccess(path: Path?, modes: MutableSet<out AccessMode>?, vararg linkOptions: LinkOption?) {
@@ -38,7 +36,7 @@ class PolyglotFileSystem : FileSystem {
         println(path)
         println(ArrayUtils.toString(options))
         println(ArrayUtils.toString(arrayOf(*attrs)))
-        throw SecurityException("no fuck off")
+        TODO("Not yet implemented")
     }
 
     override fun newDirectoryStream(dir: Path?, filter: DirectoryStream.Filter<in Path>?): DirectoryStream<Path> {

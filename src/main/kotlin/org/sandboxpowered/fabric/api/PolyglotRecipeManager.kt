@@ -39,7 +39,7 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
 
     @Export
     fun add(value: Value) {
-        if (!value.hasMembers()) throw UnsupportedOperationException("Unsupported value in recipe creation")
+        require(value.hasMembers()) { "Unsupported value as custom recipe input" }
         newRecipes.add(value.toJSON())
     }
 
@@ -51,7 +51,7 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
     }
 
     private fun convertValueToRecipeFilter(value: Value): BiPredicate<Identifier, JsonElement>? {
-        if (!value.hasMembers()) throw UnsupportedOperationException("Unsupported value for recipe filter")
+        require(value.hasMembers()) { "Unsupported value for recipe filter" }
 
         var predicate: BiPredicate<Identifier, JsonElement>? = null
 
@@ -114,12 +114,9 @@ class PolyglotRecipeManager(private val map: MutableMap<Identifier, JsonElement>
 
     @Export
     fun remove(value: Value) {
-        if (!value.hasMembers()) throw UnsupportedOperationException("Unsupported value in recipe removal")
+        require(value.hasMembers()) { "Unsupported value for recipe filter" }
 
-        val predicate = convertValueToRecipeFilter(value)
-
-        if (predicate != null) removalPredicates += predicate
-        else throw UnsupportedOperationException("Unsupported recipe filter $value")
+        removalPredicates += requireNotNull(convertValueToRecipeFilter(value)) { "Unsupported recipe filter $value" }
     }
 
     private fun mergePredicates(
