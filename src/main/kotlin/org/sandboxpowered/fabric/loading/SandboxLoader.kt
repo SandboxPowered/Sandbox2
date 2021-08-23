@@ -67,7 +67,7 @@ class SandboxLoader {
                         polyglotLoader.loadScriptContext(addon.path.name, sourceBuilder.build())
                     }
                     "jar" -> {
-                        if (side == Side.CLIENT) throw UnsupportedOperationException("Unable to load .jar on client")
+                        require(side != Side.CLIENT) { "Unable to load .jar on client" }
 
                         // TODO
                         throw UnsupportedOperationException(".jar is not supported yet")

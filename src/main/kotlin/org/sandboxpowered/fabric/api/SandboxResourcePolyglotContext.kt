@@ -38,7 +38,7 @@ class SandboxResourcePolyglotContext(private val resource: String, private val s
 
     @Export
     fun on(event: String, function: Value) {
-        if (!function.canExecute()) throw UnsupportedOperationException("Attempted to register non-function to event $event")
+        require(function.canExecute()) { "Unable to register non-function to event $event" }
 
         if (!events.containsKey(event)) events[event] = ArrayList()
 
