@@ -4,8 +4,13 @@ import com.google.gson.*
 import org.graalvm.polyglot.Value
 
 
-fun Value.getMemberValue(identifier: String): String? =
-    if (hasMember(identifier)) getMember(identifier).asString() else null
+fun Value.getMemberValue(member: String): Value? = if (hasMember(member)) getMember(member) else null
+
+fun Value.getMemberValueStr(member: String): String? = getMemberValue(member)?.asString()
+fun Value.getMemberValueInt(member: String): Int? = getMemberValue(member)?.asInt()
+
+fun Value.getMemberValue(member: String, default: String): String = getMemberValueStr(member) ?: default
+fun Value.getMemberValue(member: String, default: Int): Int = getMemberValueInt(member) ?: default
 
 fun Value.toJSON(): JsonElement = when {
     hasArrayElements() -> JsonArray().apply {
