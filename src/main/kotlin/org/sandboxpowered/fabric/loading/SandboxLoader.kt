@@ -4,6 +4,7 @@ import com.electronwill.nightconfig.core.file.FileConfig
 import com.google.common.hash.Hashing
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import org.apache.commons.io.FileUtils
 import org.apache.logging.log4j.LogManager.getLogger
 import org.graalvm.polyglot.Source
 import org.sandboxpowered.fabric.Side
@@ -27,8 +28,9 @@ class SandboxLoader {
         //TODO: make client side not scan instead load from list obtained from server
         val addons = AddonScanner.scanDirectory(Path.of("resources"))
         val cacheDir = Path.of(".sandbox/cache")
-        if (Files.notExists(cacheDir))
-            Files.createDirectories(cacheDir)
+        if (Files.exists(cacheDir))
+            FileUtils.deleteDirectory(cacheDir.toFile())
+        Files.createDirectories(cacheDir)
         addons.forEach { addon ->
             val scripts = arrayListOf<Path>()
 
