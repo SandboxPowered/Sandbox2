@@ -14,7 +14,7 @@ object Main {
     lateinit var resourceManager: ServerResourceManager
 
     val loader = SandboxLoader()
-    lateinit var webServer: WebServer
+    var webServer: WebServer? = null
 
     fun startSandboxInternals() {
 
@@ -28,13 +28,17 @@ object Main {
     fun startSandboxDedicatedServer() {
         initSandboxContent()
         loader.load(Side.SERVER)
-        webServer = WebServer()
-        webServer.start()
+        webServer?.stop()
+        webServer = WebServer().apply { start() }
     }
 
     fun startSandboxClient() {
         initSandboxContent()
         loader.load(Side.CLIENT)
+    }
+
+    fun shutdownSandbox() {
+        webServer?.stop()
     }
 
     private fun initSandboxContent() {
