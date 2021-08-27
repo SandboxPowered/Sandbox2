@@ -30,7 +30,13 @@ bin/
 
 # fabric
 
-run/
+run/logs/
+run/.mixin.out
+run/saves
+run/.sandbox
+run/*.*
+run/world/
+run/resourcepacks
 
 # npm
 /node_modules/

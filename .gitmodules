@@ -1,0 +1,3 @@
+[submodule "run/resources/example"]
+	path = run/resources/example
+	url = https://github.com/SandboxPowered/Example-Resource.git
